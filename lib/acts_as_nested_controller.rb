@@ -18,15 +18,15 @@ module ActsAsNestedController
       
       options[:parent_class] = if options[:parent_class].is_a?(Array)
         options[:parent_class].inject({}) do |map, klass| 
-          map.merge( "#{klass.to_s.underscore}_id".to_sym => klass.to_s.classify.constantize )
+          map.merge( "#{klass.to_s.underscore}_id".to_sym => klass.to_s.camelize.constantize )
         end
       else
-        { "#{options[:parent_class].to_s.underscore}_id".to_sym => options[:parent_class].to_s.classify.constantize }
+        { "#{options[:parent_class].to_s.underscore}_id".to_sym => options[:parent_class].to_s.camelize.constantize }
       end
         
       options[:parent_association] ||= options[:parent_class].values.first.to_s.underscore.to_sym
         
-      options[:child_class] = options[:child_class].to_s.classify.constantize
+      options[:child_class] = options[:child_class].to_s.camelize.constantize
       options[:child_name] = options[:child_name] || options[:child_class].to_s.underscore
       
       options[:child_association] = (options[:child_association] || options[:child_class]).to_s
