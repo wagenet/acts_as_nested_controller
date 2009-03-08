@@ -82,15 +82,19 @@ module ActsAsNestedController
       end
     
       def nested_parent_finder(*find_params)
-        nested_controller_options[:parent_finder] ?
-          evaluate_method(nested_controller_options[:parent_finder], nested_parent_class, *find_params) :
-          nested_parent_class.find(nested_parent_param)
+        if nested_controller_options[:parent_finder]
+          evaluate_method(nested_controller_options[:parent_finder], nested_parent_class, *find_params)
+        else
+          finder_with_scopes(nested_parent_class, find_params)
+        end
       end
     
       def nested_child_finder(*find_params)
-        nested_controller_options[:child_finder] ?
-          evaluate_method(nested_controller_options[:child_finder], *find_params) :
-          nested_base.find(*find_params)
+        if nested_controller_options[:child_finder]
+          evaluate_method(nested_controller_options[:child_finder], *find_params)
+        else
+          finder_with_scopes(nested_base, find_params)
+        end
       end
     
       def nested_child_builder(parent, *child_params)
@@ -162,6 +166,16 @@ module ActsAsNestedController
               "Callbacks must be a symbol denoting the method to call, a string to be evaluated, " +
               "or a block to be invoked."
           end
+      end
+      
+      def finder_with_scopes(base, find_params)
+        options = find_params.extract_options!
+        options.symbolize_keys!
+        
+        [*options.delete(:scopes)].each_with_object(base){|scope, b| b.send(scope)} if options[:scopes]
+                
+        find_params << options
+        base.find(*find_params)
       end
       
       # Stub
