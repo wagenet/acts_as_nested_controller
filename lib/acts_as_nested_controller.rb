@@ -14,7 +14,8 @@ module ActsAsNestedController
       
       rescue_from ActsAsNestedController::HaltExecution, :with => :execution_halted
       
-      options.reverse_merge!(:child_class => controller_name.singularize, :find_in_association => true, :singleton => false)
+      options.reverse_merge!(:child_class => controller_name.singularize, :find_in_association => true, :singleton => false,
+                              :force_after_find_parent => true)
       
       options[:parent_class] = if options[:parent_class].is_a?(Array)
         options[:parent_class].inject({}) do |map, klass| 
@@ -137,7 +138,7 @@ module ActsAsNestedController
           children = nested_child_finder(*find_params)
           parent = nested_parent_param ? nested_parent : nil
         end
-        after_find_nested_parent(parent) if parent
+        after_find_nested_parent(parent) if parent || nested_controller_options[:force_after_find_parent]
         return parent, children
       end
   
@@ -149,7 +150,7 @@ module ActsAsNestedController
           child = nested_controller_options[:child_class].new(*child_params)
           parent = child.send(nested_controller_options[:parent_association])
         end
-        after_find_nested_parent(parent) if parent
+        after_find_nested_parent(parent) if parent || nested_controller_options[:force_after_find_parent]
         return parent, child
       end
     
@@ -172,9 +173,10 @@ module ActsAsNestedController
         options = find_params.extract_options!
         options.symbolize_keys!
         
-        [*options.delete(:scopes)].each_with_object(base){|scope, b| b.send(scope)} if options[:scopes]
-                
-        find_params << options
+        base = [*options.delete(:scopes)].inject(base){|b, scope| b.send(scope) } if options[:scopes]
+        
+        find_params << options unless options.empty?
+        
         base.find(*find_params)
       end
       
