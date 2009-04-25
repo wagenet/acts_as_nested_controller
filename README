@@ -1,0 +1,67 @@
+= ActsAsNestedController - Easy controller support for nested routes.
+
+== Overview
+
+Rails makes it easy to write nested routes, however there's a bit of work involved in setting up your controller
+to properly handle them. ActsAsNestedController does the dirty work for you.
+
+  ActionController::Routing::Routes.draw do |map|
+    map.resources :accounts do |a|
+      a.resources :users
+    end
+    map.resources :users
+  end
+
+  class Account < ActiveRecord::Base
+    has_many :users
+  end
+
+  class User < ActiveRecord::Base
+    belongs_to :account
+  end
+
+  class UsersController < ActionController::Base
+    acts_as_nested_controller :parent_class => :account
+
+    def index
+      @account, @users = find_users(:all)
+    end
+
+    def show
+      @account, @user = find_user(params[:id])
+    end
+
+    def new
+      @account, @user = new_user(params[:user])
+    end
+  end
+
+Now we can access +UsersController+ with a variety of different urls:
+
+  /users
+  /users/:id
+  /accounts/:account_id/users
+  /accounts/:account_id/users/:id
+
+When <tt>:account_id</tt> is present, the custom finders and builders will automatically perform the User actions on the
+Account's +users+ association.
+For instance, +find_user+ runs code similar to the following:
+
+  account = Account.find(params[:account_id])
+  user = account.users.find(params[:id])
+
+This allows for simple and sane nested routes.
+
+See ActsAsNestedController::ActsMethods for more details and options.
+
+== Installation
+
+  ruby script/plugin install git://github.com/rxcfc/acts_as_nested_controller.git
+
+== TODO
+
+* Add proper automated tests.
+
+== Credits
+Author: Peter Wagenet (http://in.finitu.de)
+Website: http://github.com/rxcfc/acts_as_nested_controller
