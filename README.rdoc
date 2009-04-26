@@ -63,5 +63,7 @@ See ActsAsNestedController::ActsMethods for more details and options.
 * Add proper automated tests.
 
 == Credits
+
 Author: Peter Wagenet (http://in.finitu.de)
+
 Website: http://github.com/rxcfc/acts_as_nested_controller
