@@ -32,7 +32,9 @@ module ActsAsNestedController
     end
 
     def after_find(parent)
-      (after_find_method ? evaluate_method(after_find_method, parent) : true) || raise(ActsAsNestedController::HaltExecution)
+      if parent || config[:force_after_find_parent]
+        (after_find_method ? evaluate_method(after_find_method, parent) : true) || raise(ActsAsNestedController::HaltExecution)
+      end
     end
 
     private

@@ -144,7 +144,7 @@ module ActsAsNestedController
           children = nested_children.find(*find_params)
           parent = nested_parent.param ? nested_parent.find : nil
         end
-        nested_parent.after_find(parent) if parent || nested_controller_config[:force_after_find_parent]
+        nested_parent.after_find(parent)
         return parent, children
       end
 
@@ -156,7 +156,7 @@ module ActsAsNestedController
           child = nested_children.klass.new(*child_params)
           parent = nested_controller_config[:find_parent_from_child] ? child.send(nested_children.parent_association) : nil
         end
-        nested_parent.after_find(parent) if parent || nested_controller_config[:force_after_find_parent]
+        nested_parent.after_find(parent)
         return parent, child
       end
 
