@@ -6,11 +6,11 @@ module ActsAsNestedController
     end
 
     def singleton?
-      !!config[:singleton]
+      config[:singleton] == true
     end
 
     def find_in_association?
-      !!config[:find_in_association]
+      config[:find_in_association] == true
     end
 
     def klass

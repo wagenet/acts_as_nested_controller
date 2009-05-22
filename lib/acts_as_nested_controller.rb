@@ -76,7 +76,7 @@ module ActsAsNestedController
     # [:find_parent_from_child]
     #   By default when <tt>params[:parent_id]</tt> is missing we load the child first and then attempt to load the
     #   parent by calling <tt>:parent_association</tt> on the child.
-    #   Set this to fault to skip this attempt.
+    #   Set this to fault to skip this attempt and instead try to find by <tt>:parent_id</tt>.
     # [:after_find_parent]
     #   Specify a method, proc, or string (will be evaled) to be called after a parent is found.
     #   If a method or proc, it will be called with <tt>(parent)</tt>.
@@ -130,7 +130,8 @@ module ActsAsNestedController
           child = parent.send(nested_parent.child_association)
         else
           child = nested_children.find(*find_params)
-          parent = nested_controller_config[:find_parent_from_child] ? child.send(nested_children.parent_association) : nil
+          parent = nested_controller_config[:find_parent_from_child] ?
+                      child.send(nested_children.parent_association) : (nested_parent.find rescue nil)
         end
         nested_parent.after_find(parent)
         return parent, child
@@ -154,7 +155,8 @@ module ActsAsNestedController
           child = nested_children.build(parent, *child_params)
         else
           child = nested_children.klass.new(*child_params)
-          parent = nested_controller_config[:find_parent_from_child] ? child.send(nested_children.parent_association) : nil
+          parent = nested_controller_config[:find_parent_from_child] ?
+                      child.send(nested_children.parent_association) : (nested_parent.find rescue nil)
         end
         nested_parent.after_find(parent)
         return parent, child
